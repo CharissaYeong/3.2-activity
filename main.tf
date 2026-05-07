@@ -55,7 +55,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_tf_encryption"
   }
 }
 
-# 4. Lifecycle Configuration (Main)
 resource "aws_s3_bucket_lifecycle_configuration" "s3_tf_lifecycle" {
   bucket = aws_s3_bucket.s3_tf.id
 
