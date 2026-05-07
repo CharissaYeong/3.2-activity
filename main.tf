@@ -45,7 +45,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_tf_encryption"
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "aws:kms"
+      sse_algorithm = "AES256"
     }
   }
 }
@@ -56,6 +56,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "s3_tf_lifecycle" {
   rule {
     id     = "expire-old-versions"
     status = "Enabled"
+
+    filter {}
 
     noncurrent_version_expiration {
       noncurrent_days = 90
