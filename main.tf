@@ -4,12 +4,12 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket = "sctp-ce12-tfstate" # Change this
-    key    = ""  # Change this
+    bucket = "sctp-ce12-tfstate"
+    key    = "3.2/terraform.tfstate"
     region = "ap-southeast-1"
   }
 }
 
 resource "aws_s3_bucket" "s3_tf" {
-  bucket_prefix =   # Set your bucket name here
+  bucket_prefix =   charissa
 }
