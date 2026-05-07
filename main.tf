@@ -55,21 +55,14 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_tf_encryption"
   }
 }
 
-<<<<<<< HEAD
-=======
 # 4. Lifecycle Configuration (Main)
->>>>>>> 1a76a92e11eb0b690e82a22230413a9dc1f61ee2
 resource "aws_s3_bucket_lifecycle_configuration" "s3_tf_lifecycle" {
   bucket = aws_s3_bucket.s3_tf.id
 
   rule {
     id     = "cleanup-and-finops"
     status = "Enabled"
-<<<<<<< HEAD
     filter {}
-=======
-    filter {} # Fixed: Required to apply to the whole bucket
->>>>>>> 1a76a92e11eb0b690e82a22230413a9dc1f61ee2
 
     noncurrent_version_expiration {
       noncurrent_days = 90
@@ -81,10 +74,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "s3_tf_lifecycle" {
   }
 }
 
-<<<<<<< HEAD
-=======
-# 5. Logging (Main) - Link main bucket to the log bucket below
->>>>>>> 1a76a92e11eb0b690e82a22230413a9dc1f61ee2
 resource "aws_s3_bucket_logging" "s3_tf_logging" {
   bucket        = aws_s3_bucket.s3_tf.id
   target_bucket = aws_s3_bucket.log_bucket.id
@@ -114,10 +103,6 @@ resource "aws_s3_bucket_public_access_block" "log_bucket_pab" {
 resource "aws_s3_bucket_ownership_controls" "log_bucket_oc" {
   bucket = aws_s3_bucket.log_bucket.id
   rule {
-<<<<<<< HEAD
-=======
-    # Fixes CKV2_AWS_65 by disabling ACLs and using bucket owner enforcement
->>>>>>> 1a76a92e11eb0b690e82a22230413a9dc1f61ee2
     object_ownership = "BucketOwnerEnforced"
   }
 }
