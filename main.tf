@@ -24,8 +24,8 @@ terraform {
 resource "aws_s3_bucket" "s3_tf" {
   bucket_prefix = "charissa-"
 
-  # checkov:skip=CKV2_AWS_62: Event notifications are not required for this use case.
-  # checkov:skip=CKV_AWS_144: Cross-region replication is not required for this dev/test bucket to minimize costs.
+  # checkov:skip=CKV_AWS_144: Cross-region replication not required for cost reasons
+  # checkov:skip=CKV2_AWS_62: Event notifications not required for this use case
 }
 
 resource "aws_s3_bucket_public_access_block" "s3_tf_pab" {
@@ -48,47 +48,63 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_tf_encryption"
 
   rule {
     apply_server_side_encryption_by_default {
-      # This alias points to the default KMS key for S3 in your account
       kms_master_key_id = "alias/aws/s3"
       sse_algorithm     = "aws:kms"
     }
-    # This ensures the bucket uses the KMS key for all new objects
     bucket_key_enabled = true
   }
 }
 
+# 4. Lifecycle Configuration (Main)
 resource "aws_s3_bucket_lifecycle_configuration" "s3_tf_lifecycle" {
   bucket = aws_s3_bucket.s3_tf.id
 
   rule {
-    id     = "cleanup-and-abort-failed-uploads"
+    id     = "cleanup-and-finops"
     status = "Enabled"
-    filter {}
-
-    abort_incomplete_multipart_upload {
-      days_after_initiation = 7
-    }
+    filter {} # Fixed: Required to apply to the whole bucket
 
     noncurrent_version_expiration {
       noncurrent_days = 90
     }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
   }
 }
 
+# 5. Logging (Main) - Link main bucket to the log bucket below
 resource "aws_s3_bucket_logging" "s3_tf_logging" {
-  bucket = aws_s3_bucket.s3_tf.id
-
+  bucket        = aws_s3_bucket.s3_tf.id
   target_bucket = aws_s3_bucket.log_bucket.id
   target_prefix = "log/"
 }
 
+
 resource "aws_s3_bucket" "log_bucket" {
   bucket_prefix = "charissa-logs-"
+
+  # checkov:skip=CKV_AWS_18: This is the log bucket itself
+  # checkov:skip=CKV_AWS_21: Versioning not required for logs
+  # checkov:skip=CKV_AWS_144: Replication not required for logs
+  # checkov:skip=CKV_AWS_145: SSE-S3 is sufficient for logs
+  # checkov:skip=CKV2_AWS_61: Lifecycle not required for this dev activity
+  # checkov:skip=CKV2_AWS_62: Notifications not required for logs
+}
+
+resource "aws_s3_bucket_public_access_block" "log_bucket_pab" {
+  bucket                  = aws_s3_bucket.log_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_ownership_controls" "log_bucket_oc" {
   bucket = aws_s3_bucket.log_bucket.id
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    # Fixes CKV2_AWS_65 by disabling ACLs and using bucket owner enforcement
+    object_ownership = "BucketOwnerEnforced"
   }
 }
