@@ -11,5 +11,5 @@ terraform {
 }
 
 resource "aws_s3_bucket" "s3_tf" {
-  bucket_prefix =   "charissa-"
+  bucket_prefix = "charissa-"
 }
